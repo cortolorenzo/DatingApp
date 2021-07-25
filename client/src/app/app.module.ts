@@ -32,7 +32,7 @@ import { SharedModule } from './_modules/shared.module';
     MessagesComponent
   ],
   imports: [
-    BrowserModule,
+    BrowserModule, 
     AppRoutingModule,
     HttpClientModule,
     BrowserAnimationsModule,
