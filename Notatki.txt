@@ -50,8 +50,83 @@ CSS mt-3 (bootstrapowe margin top 3)
 
 
 -- Observables ---
-async -> automatic unsubscribe when component is no longer visible or in use
+async -> automaticaly subscribes and unsubscribes when component is no longer visible or in use
 prevents memory leak. Not very usable for nav which is alway visable.
 
 
+------------------------------------------------------ home component
+ ng g c home --skip-tests
+
+[] - nawis do przekazywania parametrów
+() - nawias do odbierania parametrów
+
+    <div class="form-group">
+        <label>Favourite user</label>
+        <select class="form-control">
+            <option *ngFor="let user of usersFromHomeComponent" [value]="user.userName">
+                {{user.userName}}
+            </option>
+        </select>
+    
+    </div>
+
+-------------------------------------------------------------
+mkdir -> nowy folder
+.. -> cofnij sie o folder
+ npm install ngx-toastr  
+
+
+angular.json
+
+   "styles": [
+      
+              "./node_modules/font-awesome/css/font-awesome.css",
+              "./node_modules/ngx-toastr/toastr.css"]
+
+restart app after changing that file
+
+--------------------------------
+
+ng g guard auth --skip-tests
+
+
+
+guard automatically subscribes to an observable
+
+ng-container -> doesnt create any htmt and will not interfere with any styling
+
+bootswatch.com
+npm install bootswatch -> instrukcja instalacji 
+
+---------------------- sprz¹tanie w app.module imports
+ng g m shared --flat
+
+
+--
+Source control
+https://git-scm.com/
+
+git sttus
+git init
+dotnet new gitignore
+
++ Stage files for commit control
+
+VS - > once git was initialized and changes commited
+
+git remote add origin https://github.com/cortolorenzo/DatingApp.git
+git branch -M main
+git push -u origin main
+
+From scratch;
+git init
+git add README.md (or git add .)
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/cortolorenzo/SMS_Scheduler.git
+git push -u origin main
+
+
+-----------------------------------------
+tsconfig -> ustawiamy tutaj wersje lib /dodajemy w³aœciwie
 
