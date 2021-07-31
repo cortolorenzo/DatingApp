@@ -129,4 +129,53 @@ git push -u origin main
 
 -----------------------------------------
 tsconfig -> ustawiamy tutaj wersje lib /dodajemy w³aœciwie
+Global error handling in API and Angular 
+API: API Exception custom class with middleware so that we can send basic info to production
+and detailed if running in development mode
+
+Angular interceptors: 
+Anytime there is an error form API an error interceptor will decide how to handle/present it:
+- toast message
+- not found page
+- server error page
+- etc..
+
+---------------------  Extending API
+
+1. Change property fields of a DB class
+2. Add migration:
+		dotnet ef migrations add ExtendedUserEntity
+3. Update db
+		dotnet ef database update
+
+
+
+--------------- random data
+
+https://www.json-generator.com/
+
+dotnet ef database drop
+dotnet watch run
+
+-------------------- Repository patern
+1. Encapsulate the logic -> selects methods that we actually will use
+2. Reduces duplicate query logic -> Instead of writing query three times we write it only one time in 
+repository
+3. Creates a layer of abstraction which promotes testability 
+Its easier to test against IRepository than a DbContext that involves houndreds of methods
+4. Decouples application form persitance framework (reusability)
+5. All Database queries are centralised and not scattered throughout the app
+
+--
+Reposotory is abstraction of EF -> abraction of abstraction
+each root entity should have its own repository
+
+
+
+
+
+
+
+
+
 
