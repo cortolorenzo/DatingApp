@@ -171,6 +171,35 @@ Reposotory is abstraction of EF -> abraction of abstraction
 each root entity should have its own repository
 
 
+p => p.Photos (read as: p goes to p photos)
+
+
+Automapper with method
+
+every method with get__ will populate metohod to property in __
+but this method will pull in select alll fields from db 
+
+
+----------------------------------
+
+let data = 42 
+let data: number | string = 42
+
+
+const car1 = {
+color: 'blue',
+model: 'mercedes'
+
+}
+
+
+----------------------------------
+
+ngx photo gallery
+ small: photo?.url, adding ? prevents application form error when there is no photo 
+
+
+
 
 
 
