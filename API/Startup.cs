@@ -70,7 +70,8 @@ namespace API
             app.UseRouting();
             app.UseCors(policy => policy.WithOrigins("https://localhost:4200")
                                         .AllowAnyMethod()
-                                        .AllowAnyHeader());
+                                        .AllowAnyHeader()
+                                        .AllowCredentials());
 
 
             app.UseAuthentication();
