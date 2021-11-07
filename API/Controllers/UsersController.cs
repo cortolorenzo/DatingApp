@@ -21,29 +21,33 @@ namespace API.Controllers
     public class UsersController : BaseApiController
     {
 
-        private readonly IUserRepository _userRepository;
+
         private readonly IMapper _mapper;
         private readonly IPhotoService _photoService;
+        private readonly IUnitOfWork unitOfWork;
 
-        public UsersController(IUserRepository userRepository, IMapper mapper, IPhotoService photoService)
+        public UsersController(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService photoService)
         {
+            this.unitOfWork = unitOfWork;
             this._photoService = photoService;
             this._mapper = mapper;
-            this._userRepository = userRepository;
+
         }
 
-        
+
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MemberDTO>>> GetUsers([FromQuery]UserParams userParams)
+        public async Task<ActionResult<IEnumerable<MemberDTO>>> GetUsers([FromQuery] UserParams userParams)
         {
             //Przed wprowadzeniem interfejsu repository
             //var users = await _context.Users.ToListAsync();
 
+            var gender = await unitOfWork.UserRepository.GetUserGender(User.GetUsername());
             userParams.CurrentUsername = User.GetUsername();
-            if(string.IsNullOrEmpty(userParams.Gender))
-                userParams.Gender = userParams.Gender == "male" ? "femele" : "male";
+            
+            if (string.IsNullOrEmpty(userParams.Gender))
+                userParams.Gender = gender == "male" ? "femele" : "male";
 
-            var users = await _userRepository.GetMembersAsync(userParams);
+            var users = await unitOfWork.UserRepository.GetMembersAsync(userParams);
 
             Response.AddPaginationHeader(users.CurrentPage, users.pageSize, users.TotalCount, users.TotalPages);
 
@@ -52,30 +56,30 @@ namespace API.Controllers
             return Ok(users);
         }
 
-        
+
         [HttpGet("{username}", Name = "GetUser")]
         public async Task<ActionResult<MemberDTO>> GetUser(string username)
         {
-            return await _userRepository.GetMemberAsync(username);
+            return await unitOfWork.UserRepository.GetMemberAsync(username);
         }
 
         [HttpPut]
         public async Task<ActionResult> UpdateUser(MemberUpdateDto memberUpdateDto)
         {
 
-            var user = await _userRepository.GetUserByNameAsync(User.GetUsername());
+            var user = await unitOfWork.UserRepository.GetUserByNameAsync(User.GetUsername());
 
             _mapper.Map(memberUpdateDto, user);
-            _userRepository.Upadte(user);
+            unitOfWork.UserRepository.Upadte(user);
 
-            if (await _userRepository.SaveAllAsync()) return NoContent();
+            if (await unitOfWork.Complete()) return NoContent();
             return BadRequest("Failed to update user");
         }
 
         [HttpPost("add-photo")]
         public async Task<ActionResult<PhotoDto>> AddPhoto(IFormFile file)
         {
-            var user = await _userRepository.GetUserByNameAsync(User.GetUsername());
+            var user = await unitOfWork.UserRepository.GetUserByNameAsync(User.GetUsername());
             var result = await _photoService.AddPhotoAsync(file);
 
             if (result.Error != null) return BadRequest(result.Error.Message);
@@ -85,20 +89,20 @@ namespace API.Controllers
                 PublicId = result.PublicId
             };
 
-            if(user.Photos.Count == 0)
+            if (user.Photos.Count == 0)
             {
                 photo.IsMain = true;
             }
 
             user.Photos.Add(photo);
 
-            if(await _userRepository.SaveAllAsync())
+            if (await unitOfWork.Complete())
             {
-                return CreatedAtRoute("GetUser", new {username = user.UserName},_mapper.Map<PhotoDto>(photo));
-               
+                return CreatedAtRoute("GetUser", new { username = user.UserName }, _mapper.Map<PhotoDto>(photo));
+
             }
-              
-            
+
+
             return BadRequest("Problem adding photo");
 
         }
@@ -106,15 +110,15 @@ namespace API.Controllers
         [HttpPut("set-main-photo/{photoId}")]
         public async Task<ActionResult> SetMainPhoto(int photoId)
         {
-            var user = await _userRepository.GetUserByNameAsync(User.GetUsername());
+            var user = await unitOfWork.UserRepository.GetUserByNameAsync(User.GetUsername());
             var photo = user.Photos.FirstOrDefault(x => x.Id == photoId);
 
             if (photo.IsMain) return BadRequest("This is already your main photo");
             var currentMain = user.Photos.FirstOrDefault(x => x.IsMain);
-            if(currentMain != null) currentMain.IsMain = false;
+            if (currentMain != null) currentMain.IsMain = false;
             photo.IsMain = true;
 
-            if (await _userRepository.SaveAllAsync()) return NoContent();
+            if (await unitOfWork.Complete()) return NoContent();
 
             return BadRequest("Failed to set main photo");
         }
@@ -123,13 +127,13 @@ namespace API.Controllers
         [HttpDelete("delete-photo/{photoId}")]
         public async Task<ActionResult> DeletePhoto(int photoId)
         {
-            var user = await _userRepository.GetUserByNameAsync(User.GetUsername()); 
+            var user = await unitOfWork.UserRepository.GetUserByNameAsync(User.GetUsername());
             var photo = user.Photos.FirstOrDefault(x => x.Id == photoId);
 
             if (photo == null) return NotFound();
             if (photo.IsMain) return BadRequest("You can't delete your main photo");
 
-            if(photo.PublicId != null)
+            if (photo.PublicId != null)
             {
                 var result = await _photoService.DeletePhotoAsync(photo.PublicId);
                 if (result.Error != null) return BadRequest(result.Error.Message);
@@ -138,7 +142,7 @@ namespace API.Controllers
             }
 
             user.Photos.Remove(photo);
-            if(await _userRepository.SaveAllAsync()) return Ok();
+            if (await unitOfWork.Complete()) return Ok();
             return BadRequest("Failed to delete a photo");
 
 
